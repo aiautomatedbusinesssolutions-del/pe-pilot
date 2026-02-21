@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, ChevronDown, HelpCircle, BookOpen } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
@@ -18,6 +18,7 @@ interface CheckResult {
 
 interface AnalysisResult {
   ticker: string;
+  companyName: string | null;
   score: number;
   scoreLabel: string;
   checks: CheckResult[];
@@ -375,6 +376,7 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const fetchAnalysis = useCallback(async (symbol: string) => {
     const cleaned = symbol.trim().toUpperCase();
@@ -406,6 +408,7 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    inputRef.current?.blur(); // dismiss mobile keyboard
     fetchAnalysis(ticker);
   };
 
@@ -425,13 +428,14 @@ export default function Home() {
         {/* ---- Search Bar ---- */}
         <form
           onSubmit={handleSubmit}
-          className="relative mx-auto mb-10 max-w-md"
+          className="relative mx-auto mb-2 max-w-md"
         >
           <Search
             size={18}
             className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
           />
           <input
+            ref={inputRef}
             type="text"
             value={ticker}
             onChange={(e) => setTicker(e.target.value.toUpperCase())}
@@ -440,6 +444,9 @@ export default function Home() {
           />
           {loading && <Spinner />}
         </form>
+        <p className="mx-auto mb-10 max-w-md text-center text-[11px] text-slate-600">
+          Best results: DOW 30 &amp; Large Cap stocks (API Limit)
+        </p>
 
         {/* ---- Error ---- */}
         {error && (
@@ -454,11 +461,18 @@ export default function Home() {
         {/* ---- Results (fade-in on load) ---- */}
         {!loading && result && (
           <div key={result.ticker + result.date} className="animate-fade-in">
-            {/* Ticker badge + data date */}
+            {/* Ticker + Company Name */}
             <div className="mb-6 text-center">
-              <span className="glass inline-block rounded-full px-4 py-1 text-sm font-medium text-slate-50">
-                {result.ticker}
-              </span>
+              <div className="flex items-center justify-center gap-3">
+                <span className="glass inline-block rounded-full px-4 py-1 text-sm font-bold text-slate-50">
+                  {result.ticker}
+                </span>
+                {result.companyName && (
+                  <h2 className="text-xl font-semibold text-slate-200">
+                    {result.companyName}
+                  </h2>
+                )}
+              </div>
               {result.date && (
                 <p className="mt-2 text-xs text-slate-500">
                   Data as of{" "}

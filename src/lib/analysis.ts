@@ -12,6 +12,7 @@ export interface CheckResult {
 
 export interface AnalysisResult {
   ticker: string;
+  companyName: string | null;
   score: number;
   scoreLabel: string;
   checks: CheckResult[];
@@ -33,12 +34,23 @@ function scoreLabel(score: number): string {
 function checkSectorMap(peRatio: number | null): CheckResult {
   const threshold = `S&P Avg: ${MARKET_AVG_PE} P/E`;
 
-  if (peRatio === null || peRatio <= 0) {
+  if (peRatio === null) {
+    return {
+      title: "Sector Map",
+      state: "yellow",
+      explanation:
+        "Ratio data currently restricted by API provider.",
+      value: "Data Gap",
+      threshold,
+    };
+  }
+
+  if (peRatio <= 0) {
     return {
       title: "Sector Map",
       state: "red",
       explanation:
-        "P/E ratio is unavailable or negative — the company may not be profitable.",
+        "P/E ratio is negative — the company may not be profitable.",
       value: "N/A",
       threshold,
     };
@@ -89,8 +101,8 @@ function checkValueTrap(
       title: "Value Trap Detector",
       state: "yellow",
       explanation:
-        "Insufficient data to fully assess earnings quality. Proceed with caution.",
-      value: "N/A",
+        "Ratio data currently restricted by API provider.",
+      value: "Data Gap",
       threshold,
     };
   }
@@ -142,8 +154,8 @@ function checkTrustMeter(
       title: "Trust Meter",
       state: "yellow",
       explanation:
-        "Forward P/E estimate is unavailable. Unable to assess the gap between trailing and projected earnings.",
-      value: "N/A",
+        "Ratio data currently restricted by API provider.",
+      value: "Data Gap",
       threshold,
     };
   }
@@ -189,8 +201,9 @@ function checkGrowthFilter(pegRatio: number | null): CheckResult {
     return {
       title: "Growth Filter",
       state: "yellow",
-      explanation: "PEG ratio is not available for this stock.",
-      value: "N/A",
+      explanation:
+        "Ratio data currently restricted by API provider.",
+      value: "Data Gap",
       threshold,
     };
   }
@@ -249,6 +262,7 @@ export function analyzeStock(data: StockData): AnalysisResult {
 
   return {
     ticker: data.ticker,
+    companyName: data.companyName,
     score,
     scoreLabel: scoreLabel(score),
     checks,

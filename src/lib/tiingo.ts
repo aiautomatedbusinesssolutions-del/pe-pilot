@@ -9,6 +9,7 @@ export interface TiingoDailyData {
 
 export interface StockData {
   ticker: string;
+  companyName: string | null;
   date: string;
   peRatio: number | null;
   pegRatio: number | null;
@@ -61,6 +62,7 @@ export async function fetchFundamentals(ticker: string): Promise<StockData> {
 
   return {
     ticker: ticker.toUpperCase(),
+    companyName: null,
     date: latest.date,
     peRatio,
     pegRatio,
