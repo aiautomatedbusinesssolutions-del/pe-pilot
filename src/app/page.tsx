@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, HelpCircle, BookOpen } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -23,6 +23,50 @@ interface AnalysisResult {
   checks: CheckResult[];
   date: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Glossary definitions (keyed by card title)                         */
+/* ------------------------------------------------------------------ */
+const glossary: Record<string, string> = {
+  "Sector Map":
+    "P/E Ratio: Compares a stock's price to its earnings. Lower than peers = potentially cheaper.",
+  "Value Trap Detector":
+    "EPS Growth: Measures if profits are actually growing — a cheap price with shrinking earnings is a trap.",
+  "Trust Meter":
+    "Trust Meter: Hype vs. Reality. Compares what a company actually earned to what analysts hope it will earn. A wide gap means the price may be floating on promises.",
+  "Growth Filter":
+    "PEG Ratio: Growth Bargain Filter. A low price is only good if the company is actually growing. The PEG tells you if you're getting a bargain on that growth.",
+};
+
+/* ------------------------------------------------------------------ */
+/*  Education Station lessons                                          */
+/* ------------------------------------------------------------------ */
+const lessons = [
+  {
+    number: "01",
+    title: "The P/E Multiple",
+    subtitle: "The \"Price of Admission\"",
+    body: "The Price-to-Earnings ratio tells you how much investors are willing to pay for each dollar a company earns. A P/E of 20 means the market pays $20 for every $1 of profit. A lower P/E compared to the market average can signal a bargain — but only if the company is healthy. Think of it as the cover charge: you want to make sure the party inside is worth it.",
+  },
+  {
+    number: "02",
+    title: "Value Traps",
+    subtitle: "Why Low P/E Isn't Always Good",
+    body: "A stock with a P/E of 5 looks like a steal — until you realize earnings are collapsing. The market isn't stupid; a rock-bottom P/E often means investors expect profits to keep falling. This is a \"value trap.\" The key defense? Check EPS growth. If earnings are declining alongside a low P/E, the cheap price is a warning sign, not a buying opportunity.",
+  },
+  {
+    number: "03",
+    title: "The Trust Meter",
+    subtitle: "The \"Hype Check\"",
+    body: "This compares what a company actually earned (Reality) to what analysts hope it will earn (Hype). If the gap is too wide, the stock price might be floating on promises rather than proven results. Don't buy the story, buy the stats.",
+  },
+  {
+    number: "04",
+    title: "The PEG Ratio",
+    subtitle: "The \"Growth Bargain\"",
+    body: "A low price (P/E) is only good if the company is actually growing. The PEG ratio tells you if you are getting a bargain on that growth. It ensures you aren't overpaying for a company that is standing still. Growth is only an asset if the price is right.",
+  },
+];
 
 /* ------------------------------------------------------------------ */
 /*  Color maps                                                         */
@@ -80,6 +124,37 @@ function Spinner() {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Glossary Tooltip                                                   */
+/* ------------------------------------------------------------------ */
+function GlossaryTip({ term }: { term: string }) {
+  const [open, setOpen] = useState(false);
+  const text = glossary[term];
+  if (!text) return null;
+
+  return (
+    <span className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-500 transition-colors hover:text-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-500"
+        aria-label={`Learn about ${term}`}
+      >
+        <HelpCircle size={14} />
+      </button>
+
+      {/* Tooltip bubble */}
+      {open && (
+        <span className="absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-xs leading-relaxed text-slate-300 shadow-lg">
+          {text}
+          {/* Arrow */}
+          <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+        </span>
+      )}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  Gauge                                                              */
 /* ------------------------------------------------------------------ */
 function scoreToState(s: number) {
@@ -108,7 +183,6 @@ function Gauge({ score, label }: { score: number; label: string }) {
   return (
     <div className="flex flex-col items-center">
       <svg viewBox="0 0 200 120" className="w-64 sm:w-72 md:w-80">
-        {/* Background arc */}
         <path
           d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
           fill="none"
@@ -116,7 +190,6 @@ function Gauge({ score, label }: { score: number; label: string }) {
           strokeWidth="14"
           strokeLinecap="round"
         />
-        {/* Filled arc */}
         <path
           d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
           fill="none"
@@ -126,7 +199,6 @@ function Gauge({ score, label }: { score: number; label: string }) {
           strokeDasharray={`${filled} ${gap}`}
           className="transition-all duration-700 ease-out"
         />
-        {/* Score text */}
         <text
           x={cx}
           y={cy - 12}
@@ -136,7 +208,6 @@ function Gauge({ score, label }: { score: number; label: string }) {
         >
           {score}
         </text>
-        {/* /100 label */}
         <text
           x={cx}
           y={cy + 10}
@@ -158,7 +229,7 @@ function Gauge({ score, label }: { score: number; label: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Check Card                                                         */
+/*  Check Card (glassmorphism + tooltip)                               */
 /* ------------------------------------------------------------------ */
 function CheckCard({
   title,
@@ -174,15 +245,17 @@ function CheckCard({
   threshold: string;
 }) {
   return (
-    <div className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900 p-6 transition-colors hover:border-slate-700">
-      {/* Header row */}
+    <div className="glass flex flex-col justify-between rounded-2xl p-6 transition-colors hover:border-slate-600">
       <div>
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
               className={`inline-block h-3 w-3 rounded-full animate-status-pulse ${dotColor[state]}`}
             />
-            <h3 className="text-lg font-semibold text-slate-50">{title}</h3>
+            <h3 className="text-lg font-semibold text-slate-50">
+              {title}
+              <GlossaryTip term={title} />
+            </h3>
           </div>
           <span
             className={`text-sm font-medium tabular-nums ${labelColor[state]}`}
@@ -193,11 +266,72 @@ function CheckCard({
         <p className="text-sm leading-relaxed text-slate-400">{explanation}</p>
       </div>
 
-      {/* Threshold label */}
-      <p className="mt-4 border-t border-slate-800 pt-3 text-xs text-slate-500">
+      <p className="mt-4 border-t border-slate-800/60 pt-3 text-xs text-slate-500">
         {threshold}
       </p>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Education Station                                                  */
+/* ------------------------------------------------------------------ */
+function EducationStation() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="mt-12">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="glass mx-auto flex w-full items-center justify-between rounded-2xl px-6 py-4 transition-colors hover:border-slate-600"
+      >
+        <div className="flex items-center gap-3">
+          <BookOpen size={18} className="text-sky-400" />
+          <span className="text-sm font-semibold text-slate-50">
+            Education Station
+          </span>
+          <span className="text-xs text-slate-500">
+            Bite-sized lessons for beginners
+          </span>
+        </div>
+        <ChevronDown
+          size={18}
+          className={`text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Expandable content */}
+      <div
+        className={`grid transition-all duration-300 ease-out ${open ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-4">
+            {lessons.map((lesson) => (
+              <article
+                key={lesson.number}
+                className="glass rounded-2xl p-6 transition-colors hover:border-slate-600"
+              >
+                <div className="mb-3 flex items-baseline gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-xs font-bold text-sky-400">
+                    {lesson.number}
+                  </span>
+                  <div>
+                    <h4 className="text-base font-semibold text-slate-50">
+                      {lesson.title}
+                    </h4>
+                    <p className="text-xs text-slate-500">{lesson.subtitle}</p>
+                  </div>
+                </div>
+                <p className="text-sm leading-relaxed text-slate-400">
+                  {lesson.body}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -207,7 +341,7 @@ function CheckCard({
 function LoadingSkeleton() {
   return (
     <>
-      <section className="mx-auto mb-10 max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-8">
+      <section className="glass mx-auto mb-10 max-w-sm rounded-2xl p-8">
         <div className="animate-pulse">
           <div className="mx-auto mb-4 h-4 w-32 rounded bg-slate-800" />
           <div className="mx-auto h-40 w-64 rounded bg-slate-800" />
@@ -215,10 +349,7 @@ function LoadingSkeleton() {
       </section>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="animate-pulse rounded-2xl border border-slate-800 bg-slate-900 p-6"
-          >
+          <div key={i} className="glass animate-pulse rounded-2xl p-6">
             <div className="mb-3 h-5 w-32 rounded bg-slate-800" />
             <div className="h-4 w-full rounded bg-slate-800" />
             <div className="mt-2 h-4 w-3/4 rounded bg-slate-800" />
@@ -332,7 +463,7 @@ export default function Home() {
             </div>
 
             {/* ---- Master Gauge ---- */}
-            <section className="mx-auto mb-4 max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-8">
+            <section className="glass mx-auto mb-4 max-w-sm rounded-2xl p-8">
               <h2 className="mb-4 text-center text-sm font-medium uppercase tracking-wider text-slate-500">
                 Flight Readiness
               </h2>
@@ -359,6 +490,9 @@ export default function Home() {
                 />
               ))}
             </section>
+
+            {/* ---- Education Station ---- */}
+            <EducationStation />
           </div>
         )}
       </div>
