@@ -142,11 +142,9 @@ function GlossaryTip({ term }: { term: string }) {
         <HelpCircle size={14} />
       </button>
 
-      {/* Tooltip bubble */}
       {open && (
         <span className="absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-xs leading-relaxed text-slate-300 shadow-lg">
           {text}
-          {/* Arrow */}
           <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
         </span>
       )}
@@ -229,7 +227,7 @@ function Gauge({ score, label }: { score: number; label: string }) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Check Card (glassmorphism + tooltip)                               */
+/*  Check Card                                                         */
 /* ------------------------------------------------------------------ */
 function CheckCard({
   title,
@@ -245,7 +243,10 @@ function CheckCard({
   threshold: string;
 }) {
   return (
-    <div className="glass flex flex-col justify-between rounded-2xl p-6 transition-colors hover:border-slate-600">
+    <div
+      className="glass flex flex-col justify-between rounded-2xl p-6"
+      data-glow={state}
+    >
       <div>
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -258,15 +259,15 @@ function CheckCard({
             </h3>
           </div>
           <span
-            className={`text-sm font-medium tabular-nums ${labelColor[state]}`}
+            className={`text-sm font-bold tabular-nums ${labelColor[state]}`}
           >
             {value}
           </span>
         </div>
-        <p className="text-sm leading-relaxed text-slate-400">{explanation}</p>
+        <p className="text-sm leading-relaxed text-slate-300">{explanation}</p>
       </div>
 
-      <p className="mt-4 border-t border-slate-800/60 pt-3 text-xs text-slate-500">
+      <p className="mt-4 border-t border-white/[0.06] pt-3 text-xs text-slate-500">
         {threshold}
       </p>
     </div>
@@ -280,18 +281,27 @@ function EducationStation() {
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="mt-12">
+    <section className="mt-8">
+      {/* Divider */}
+      <div className="mb-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700/60 to-transparent" />
+        <span className="text-[10px] font-medium uppercase tracking-widest text-slate-600">
+          Learn
+        </span>
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700/60 to-transparent" />
+      </div>
+
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="glass mx-auto flex w-full items-center justify-between rounded-2xl px-6 py-4 transition-colors hover:border-slate-600"
+        className="glass flex w-full items-center justify-between rounded-2xl px-6 py-4"
       >
         <div className="flex items-center gap-3">
           <BookOpen size={18} className="text-sky-400" />
           <span className="text-sm font-semibold text-slate-50">
             Education Station
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="hidden text-xs text-slate-500 sm:inline">
             Bite-sized lessons for beginners
           </span>
         </div>
@@ -301,17 +311,13 @@ function EducationStation() {
         />
       </button>
 
-      {/* Expandable content */}
       <div
         className={`grid transition-all duration-300 ease-out ${open ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
       >
         <div className="overflow-hidden">
-          <div className="space-y-4">
+          <div className="space-y-3">
             {lessons.map((lesson) => (
-              <article
-                key={lesson.number}
-                className="glass rounded-2xl p-6 transition-colors hover:border-slate-600"
-              >
+              <article key={lesson.number} className="glass rounded-2xl p-6">
                 <div className="mb-3 flex items-baseline gap-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sky-500/15 text-xs font-bold text-sky-400">
                     {lesson.number}
@@ -323,7 +329,7 @@ function EducationStation() {
                     <p className="text-xs text-slate-500">{lesson.subtitle}</p>
                   </div>
                 </div>
-                <p className="text-sm leading-relaxed text-slate-400">
+                <p className="text-sm leading-relaxed text-slate-300">
                   {lesson.body}
                 </p>
               </article>
@@ -341,18 +347,19 @@ function EducationStation() {
 function LoadingSkeleton() {
   return (
     <>
-      <section className="glass mx-auto mb-10 max-w-sm rounded-2xl p-8">
+      {/* Gauge card — breathing pulse while "contacting the tower" */}
+      <section className="glass mx-auto mb-10 max-w-sm animate-gauge-breathe rounded-2xl p-8">
         <div className="animate-pulse">
-          <div className="mx-auto mb-4 h-4 w-32 rounded bg-slate-800" />
-          <div className="mx-auto h-40 w-64 rounded bg-slate-800" />
+          <div className="mx-auto mb-4 h-4 w-32 rounded bg-white/[0.06]" />
+          <div className="mx-auto h-40 w-64 rounded bg-white/[0.06]" />
         </div>
       </section>
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="glass animate-pulse rounded-2xl p-6">
-            <div className="mb-3 h-5 w-32 rounded bg-slate-800" />
-            <div className="h-4 w-full rounded bg-slate-800" />
-            <div className="mt-2 h-4 w-3/4 rounded bg-slate-800" />
+            <div className="mb-3 h-5 w-32 rounded bg-white/[0.06]" />
+            <div className="h-4 w-full rounded bg-white/[0.06]" />
+            <div className="mt-2 h-4 w-3/4 rounded bg-white/[0.06]" />
           </div>
         ))}
       </section>
@@ -407,7 +414,9 @@ export default function Home() {
       <div className="mx-auto max-w-4xl">
         {/* ---- Header ---- */}
         <header className="mb-10 text-center">
-          <h1 className="text-3xl font-bold text-slate-50">PE Pilot</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-50">
+            PE Pilot
+          </h1>
           <p className="mt-1 text-lg text-slate-400">
             Spot the bargain. Stick the landing.
           </p>
@@ -427,7 +436,7 @@ export default function Home() {
             value={ticker}
             onChange={(e) => setTicker(e.target.value.toUpperCase())}
             placeholder="Search Ticker..."
-            className="w-full rounded-full border border-slate-800 bg-slate-900 py-3 pl-11 pr-10 text-sm uppercase text-slate-50 placeholder-slate-500 outline-none transition-all focus:border-sky-500 focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+            className="glass w-full rounded-full py-3 pl-11 pr-10 text-sm uppercase text-slate-50 placeholder-slate-500 outline-none transition-all focus:border-sky-500 focus:ring-2 focus:ring-sky-500/40"
           />
           {loading && <Spinner />}
         </form>
@@ -435,7 +444,7 @@ export default function Home() {
         {/* ---- Error ---- */}
         {error && (
           <div className="mx-auto mb-10 max-w-sm rounded-2xl border border-rose-800/50 bg-rose-900/20 p-6 text-center">
-            <p className="text-sm text-rose-400">{error}</p>
+            <p className="text-sm text-rose-300">{error}</p>
           </div>
         )}
 
@@ -447,7 +456,7 @@ export default function Home() {
           <div key={result.ticker + result.date} className="animate-fade-in">
             {/* Ticker badge + data date */}
             <div className="mb-6 text-center">
-              <span className="inline-block rounded-full border border-slate-700 bg-slate-900 px-4 py-1 text-sm font-medium text-slate-50">
+              <span className="glass inline-block rounded-full px-4 py-1 text-sm font-medium text-slate-50">
                 {result.ticker}
               </span>
               {result.date && (
@@ -472,7 +481,7 @@ export default function Home() {
 
             {/* ---- Pilot's Briefing ---- */}
             <p
-              className={`mx-auto mb-10 max-w-sm text-center text-sm font-medium ${labelColor[scoreToState(result.score)]}`}
+              className={`mx-auto mb-10 max-w-md text-center text-base font-bold tracking-wide ${labelColor[scoreToState(result.score)]}`}
             >
               {briefingText(result.score)}
             </p>
