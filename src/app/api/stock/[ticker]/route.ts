@@ -17,26 +17,27 @@ export async function GET(
     );
   }
 
-  // ---- Step 1: Fetch company identity from FMP profile ----
-  let companyName: string | null = null;
-  let profileMarketCap: number | null = null;
+  // ---- Step 1: Fetch FMP profile + ratios in parallel ----
+  const [profileResult, ratiosResult] = await Promise.allSettled([
+    fetchFMPProfile(ticker),
+    fetchFMP(ticker),
+  ]);
 
-  try {
-    const profile = await fetchFMPProfile(ticker);
-    companyName = profile.companyName;
-    profileMarketCap = profile.marketCap;
-  } catch {
-    // Profile is optional — continue without it
-  }
+  const companyName =
+    profileResult.status === "fulfilled"
+      ? profileResult.value.companyName
+      : null;
+  const profileMarketCap =
+    profileResult.status === "fulfilled"
+      ? profileResult.value.marketCap
+      : null;
 
   // ---- Step 2: Primary engine — FMP ratios ----
-  try {
-    const stockData = await fetchFMP(ticker);
+  if (ratiosResult.status === "fulfilled") {
+    const stockData = ratiosResult.value;
     stockData.companyName = companyName;
     stockData.marketCap = stockData.marketCap ?? profileMarketCap;
     return NextResponse.json(analyzeStock(stockData));
-  } catch {
-    // Silent fail — fall through to secondary engine
   }
 
   // ---- Step 3: Secondary engine — Tiingo ----

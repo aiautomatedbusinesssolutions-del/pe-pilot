@@ -1,3 +1,5 @@
+import { deriveMetrics } from "./utils";
+
 export interface TiingoDailyData {
   date: string;
   marketCap: number | null;
@@ -19,7 +21,7 @@ export interface StockData {
 }
 
 export async function fetchFundamentals(ticker: string): Promise<StockData> {
-  const apiKey = process.env.NEXT_PUBLIC_TIINGO_API_KEY;
+  const apiKey = process.env.TIINGO_API_KEY;
   if (!apiKey) {
     throw new Error("Tiingo API key is not configured");
   }
@@ -45,20 +47,7 @@ export async function fetchFundamentals(ticker: string): Promise<StockData> {
 
   const peRatio = latest.peRatio;
   const pegRatio = latest.trailingPEG1Y;
-
-  // Derive EPS growth from P/E and PEG
-  // PEG = P/E ÷ EPS Growth Rate  →  EPS Growth = P/E ÷ PEG
-  let epsGrowth: number | null = null;
-  if (peRatio && pegRatio && pegRatio !== 0) {
-    epsGrowth = peRatio / pegRatio;
-  }
-
-  // Estimate forward P/E from trailing P/E and derived growth
-  // Forward P/E ≈ Trailing P/E ÷ (1 + growth/100)
-  let forwardPE: number | null = null;
-  if (peRatio && epsGrowth && epsGrowth > 0) {
-    forwardPE = peRatio / (1 + epsGrowth / 100);
-  }
+  const { epsGrowth, forwardPE } = deriveMetrics(peRatio, pegRatio);
 
   return {
     ticker: ticker.toUpperCase(),

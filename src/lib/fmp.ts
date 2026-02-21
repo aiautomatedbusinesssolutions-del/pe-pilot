@@ -1,4 +1,5 @@
 import type { StockData } from "./tiingo";
+import { deriveMetrics } from "./utils";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -21,7 +22,7 @@ function nonZero(v: number | null | undefined): number | null {
 }
 
 function fmpKey(): string {
-  const key = process.env.NEXT_PUBLIC_FMP_API_KEY;
+  const key = process.env.FMP_API_KEY;
   if (!key) throw new Error("FMP API key is not configured");
   return key;
 }
@@ -78,17 +79,7 @@ export async function fetchFMP(ticker: string): Promise<StockData> {
     throw new Error(`No usable ratio data from FMP for "${ticker}"`);
   }
 
-  // Derive EPS growth from P/E and PEG (same logic as Tiingo normalizer)
-  let epsGrowth: number | null = null;
-  if (peRatio && pegRatio && pegRatio !== 0) {
-    epsGrowth = peRatio / pegRatio;
-  }
-
-  // Estimate forward P/E from trailing P/E and derived growth
-  let forwardPE: number | null = null;
-  if (peRatio && epsGrowth && epsGrowth > 0) {
-    forwardPE = peRatio / (1 + epsGrowth / 100);
-  }
+  const { epsGrowth, forwardPE } = deriveMetrics(peRatio, pegRatio);
 
   return {
     ticker: ticker.toUpperCase(),

@@ -2,28 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, ChevronDown, HelpCircle, BookOpen } from "lucide-react";
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-type CheckState = "green" | "yellow" | "red";
-
-interface CheckResult {
-  title: string;
-  state: CheckState;
-  explanation: string;
-  value: string;
-  threshold: string;
-}
-
-interface AnalysisResult {
-  ticker: string;
-  companyName: string | null;
-  score: number;
-  scoreLabel: string;
-  checks: CheckResult[];
-  date: string;
-}
+import type { CheckState, CheckResult, AnalysisResult } from "@/lib/analysis";
 
 /* ------------------------------------------------------------------ */
 /*  Glossary definitions (keyed by card title)                         */
@@ -88,9 +67,9 @@ const labelColor = {
 /*  Pilot's Briefing copy                                              */
 /* ------------------------------------------------------------------ */
 function briefingText(score: number): string {
-  if (score >= 71)
+  if (score >= 76)
     return "CLEAR FOR TAKEOFF: Strong alignment between price and performance.";
-  if (score >= 31)
+  if (score >= 41)
     return "TURBULENCE: Mixed signals. Requires further due diligence.";
   return "GROUNDED: Significant valuation or growth risks detected.";
 }
