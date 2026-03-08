@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Search, ChevronDown, HelpCircle, BookOpen } from "lucide-react";
-import type { CheckState, CheckResult, AnalysisResult } from "@/lib/analysis";
+import type { CheckState, AnalysisResult } from "@/lib/analysis";
 
 /* ------------------------------------------------------------------ */
 /*  Glossary definitions (keyed by card title)                         */
